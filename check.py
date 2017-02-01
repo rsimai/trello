@@ -1,15 +1,20 @@
 #!/usr/bin/python
+#
+# this will report all users and which board they are on if
+# the board is owned by the team but the user is not a member
+# of this team.
+# 2017 rsimai@suse.com
+#
 
-import urllib, json, ConfigParser
+import urllib, json, ConfigParser, os
 
-#Config = ConfigParser.ConfigParser()
-#Config.read("~/.trellochecker")
+config_file = os.environ['HOME']+'/.externaltools'
 
-
-trello_key = ""
-trello_token = ""
-teamid = "4e70fbb834cec71bda0ba6dc"
-
+config = ConfigParser.ConfigParser()
+config.read(config_file)
+trello_key = config.get('trello.com', 'key')
+trello_token = config.get('trello.com', 'token')
+teamid = config.get('trello.com', 'teamid')
 
 
 # fetch all users from the team and store them in list users
@@ -48,10 +53,13 @@ def get_external_users(trello_key, trello_token, userid, teamid):
             status = "OK"
     return(username, fullname, status)
 
+# cache a list of all known users
 users = get_members(trello_key, trello_token, teamid)
 
+# get all boards owned by the team
 all_boards = get_boards(trello_key, trello_token, teamid)
 
+# go through boards and determine non team members
 for board in all_boards:
     members = board['memberships']
     url = board['shortUrl']
@@ -65,6 +73,3 @@ for board in all_boards:
             print boardname, url, username, fullname, status
 
     
-
-
-
